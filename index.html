@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Google Drive API Link Generator</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://fonts.googleapis.com/css?family=Inter:400,600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(120deg, #e0e7ff 0%, #f0fdfa 100%);
+            font-family: 'Inter', Arial, sans-serif;
+            margin: 0;
+            min-height: 100vh;
+        }
+
+        .main-card {
+            max-width: 550px;
+            margin: 60px auto;
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.11);
+            padding: 38px 24px 30px 24px;
+            position: relative;
+        }
+
+        h1 {
+            text-align: center;
+            color: #312e81;
+            margin-bottom: 28px;
+            font-size: 2rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        label {
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 10px;
+            display: block;
+            font-size: 1.04rem;
+        }
+
+        .input-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 22px;
+        }
+
+        .input-row input[type="text"] {
+            flex: 1;
+            padding: 12px 14px;
+            border: 1.5px solid #c7d2fe;
+            border-radius: 8px;
+            font-size: 1.04rem;
+            background: #f3f4f6;
+            transition: border 0.2s;
+        }
+
+        .input-row input[type="text"]:focus {
+            border: 1.5px solid #6366f1;
+            outline: none;
+        }
+
+        .generate-btn {
+            width: 100%;
+            padding: 15px 0;
+            background: #10b981;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-bottom: 12px;
+            margin-top: 4px;
+        }
+
+        .generate-btn:hover {
+            background: #059669;
+        }
+
+        .result-actions {
+            display: flex;
+            gap: 14px;
+            margin-top: 10px;
+            margin-bottom: 0;
+            justify-content: center;
+        }
+
+        .copy-btn,
+        .preview-btn {
+            background: #6366f1;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 18px;
+            font-size: 1rem;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+
+        .copy-btn:hover,
+        .preview-btn:hover {
+            background: #312e81;
+        }
+
+        .result-preview {
+            background: #f1f5f9;
+            border-radius: 8px;
+            padding: 13px 16px;
+            margin-top: 14px;
+            font-size: 0.98rem;
+            color: #0e7490;
+            word-break: break-all;
+            text-align: left;
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+
+        .status-message {
+            margin-top: 10px;
+            text-align: center;
+            font-size: 1.08rem;
+            color: #ef4444;
+            font-weight: 500;
+            min-height: 22px;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .main-card {
+                padding: 16px 4px 12px 4px;
+            }
+
+            h1 {
+                font-size: 1.2rem;
+            }
+
+            .copy-btn,
+            .preview-btn {
+                padding: 7px 10px;
+                font-size: 0.97rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="main-card">
+        <h1>Google Drive API Link Generator</h1>
+        <div class="input-row">
+            <input type="text" id="shareUrl" placeholder="Please Past the G Drive Video link" autocomplete="off" />
+        </div>
+        <button class="generate-btn" onclick="generateUrl()">Generate API URL</button>
+        <div class="result-actions" id="resultActions" style="display:none;">
+            <button class="copy-btn" id="copyBtn" onclick="copyUrl()">Copy</button>
+            <button class="preview-btn" id="previewBtn" onclick="togglePreview()">Preview</button>
+        </div>
+        <div class="result-preview" id="resultPreview"></div>
+        <div class="status-message" id="statusMessage"></div>
+    </div>
+    <script>
+        // Simulated .env config
+        const API_KEY = "AIzaSyAKaa_MnrqJeDhGXasSLmjc_v04DFY4aJQ";
+        let generatedUrl = "";
+
+        function extractFileId(url) {
+            const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+            return match ? match[1] : null;
+        }
+
+        function generateUrl() {
+            const input = document.getElementById('shareUrl').value.trim();
+            const statusMsg = document.getElementById('statusMessage');
+            const resultActions = document.getElementById('resultActions');
+            const resultPreview = document.getElementById('resultPreview');
+            resultActions.style.display = 'none';
+            resultPreview.style.display = 'none';
+            statusMsg.style.color = '#ef4444';
+            statusMsg.textContent = '';
+
+            if (!input) {
+                statusMsg.textContent = 'Please paste a Google Drive share link.';
+                return;
+            }
+            const fileId = extractFileId(input);
+            if (fileId) {
+                generatedUrl = `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media&key=${API_KEY}`;
+                resultActions.style.display = 'flex';
+                resultPreview.style.display = 'none';
+                statusMsg.style.color = '#10b981';
+                statusMsg.textContent = '';
+            } else {
+                generatedUrl = "";
+                statusMsg.textContent = 'Invalid Google Drive share link.';
+            }
+        }
+
+        function copyUrl() {
+            if (!generatedUrl) return;
+            navigator.clipboard.writeText(generatedUrl);
+            const copyBtn = document.getElementById('copyBtn');
+            copyBtn.textContent = 'Copied!';
+            setTimeout(() => copyBtn.textContent = 'Copy', 1200);
+        }
+
+        function togglePreview() {
+            const previewDiv = document.getElementById('resultPreview');
+            if (!generatedUrl) return;
+            if (previewDiv.style.display === 'none' || previewDiv.style.display === '') {
+                previewDiv.textContent = generatedUrl;
+                previewDiv.style.display = 'block';
+            } else {
+                previewDiv.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+
+</html>
